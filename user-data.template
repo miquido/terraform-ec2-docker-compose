@@ -1,0 +1,41 @@
+#!/bin/bash
+
+echo "${public_ssh_keys}" >> /home/ec2-user/.ssh/authorized_keys
+
+sudo mkdir /mnt/data
+
+while [ ! -b /dev/xvdf ]; do
+    echo "Waiting for /dev/xvdf to appear..."
+    sleep 2
+done
+
+# Create ext4 filesystem if it does not exist
+if ! sudo blkid /dev/xvdf; then
+    echo "No filesystem found on /dev/xvdf, creating ext4 filesystem..."
+    sudo mkfs.ext4 /dev/xvdf
+fi
+
+EBS_UUID=$(sudo blkid /dev/xvdf | awk -F'"' '{print $2}')
+
+sudo mount /dev/xvdf /mnt/data
+
+echo "UUID=$${EBS_UUID} /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+
+sudo yum install -y docker
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo systemctl enable docker
+
+su ec2-user <<'EOF'
+
+cat <<EOL >> /home/ec2-user/docker-compose.yml
+
+${docker_compose}
+
+EOL
+
+docker-compose -f /home/ec2-user/docker-compose.yml up -d
+
+EOF
