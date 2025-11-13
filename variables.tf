@@ -3,15 +3,15 @@ variable "name" {
 }
 
 variable "docker_compose" {
-    type        = string
+  type = string
 }
 
 variable "project" {
-    type        = string
+  type = string
 }
 
 variable "environment" {
-    type        = string
+  type = string
 }
 
 variable "security_group_ids" {
@@ -32,4 +32,9 @@ variable "vpc_id" {
 
 variable "availability_zone" {
   type = string
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t4g.micro"
 }

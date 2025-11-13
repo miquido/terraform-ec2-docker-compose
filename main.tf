@@ -1,13 +1,13 @@
 resource "aws_instance" "default" {
-  instance_type = "t3.micro"
+  instance_type               = var.instance_type
   associate_public_ip_address = false
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = concat(var.security_group_ids, [aws_security_group.default.id])
   ami                         = data.aws_ami.amazon_linux_2023_kernel_6_1.id
   iam_instance_profile        = aws_iam_instance_profile.default_instance.name
   user_data = templatefile("${path.module}/user-data.template", {
-    docker_compose                      = var.docker_compose
-    public_ssh_keys                     = var.public_ssh_keys
+    docker_compose  = var.docker_compose
+    public_ssh_keys = var.public_ssh_keys
   })
   root_block_device {
     volume_size = 8
