@@ -3,7 +3,7 @@ resource "aws_instance" "default" {
   associate_public_ip_address = false
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = concat(var.security_group_ids, [aws_security_group.default.id])
-  ami                         = data.aws_ami.amazon_linux_2023_kernel_6_1.id
+  ami                         = var.ami
   iam_instance_profile        = aws_iam_instance_profile.default_instance.name
   user_data = templatefile("${path.module}/user-data.template", {
     docker_compose  = var.docker_compose
@@ -16,22 +16,6 @@ resource "aws_instance" "default" {
   tags = {
     Name = "${var.project}-${var.environment}-${var.name}"
   }
-}
-
-data "aws_ami" "amazon_linux_2023_kernel_6_1" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-2023.8.20250818.0-kernel-6.12-x86_64"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
 }
 
 # Attach the EBS volume to the instance
