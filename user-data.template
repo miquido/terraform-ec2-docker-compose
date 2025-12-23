@@ -30,6 +30,11 @@ sudo systemctl enable docker
 
 su ec2-user <<'EOF'
 
+# Create .env file with environment variables
+cat <<EOL > /home/ec2-user/.env
+${env_vars}
+EOL
+
 cat <<EOL >> /home/ec2-user/docker-compose.yml
 
 ${docker_compose}

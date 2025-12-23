@@ -40,3 +40,13 @@ variable "instance_type" {
 }
 
 variable "ami" {}
+
+variable "associate_public_ip_address" {
+    type    = bool
+    default = false
+}
+
+variable "env_vars" {
+    type = map(string)
+    default = {}
+}

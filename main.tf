@@ -1,6 +1,6 @@
 resource "aws_instance" "default" {
   instance_type               = var.instance_type
-  associate_public_ip_address = false
+  associate_public_ip_address = var.associate_public_ip_address
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = concat(var.security_group_ids, [aws_security_group.default.id])
   ami                         = var.ami
@@ -8,6 +8,7 @@ resource "aws_instance" "default" {
   user_data = templatefile("${path.module}/user-data.template", {
     docker_compose  = var.docker_compose
     public_ssh_keys = var.public_ssh_keys
+    env_vars        = join("\n", [for key, value in var.env_vars : "${key}=${value}"])
   })
   root_block_device {
     volume_size = 8
@@ -98,21 +99,21 @@ resource "aws_security_group" "default" {
   name        = "${var.project}-${var.environment}-${var.name}"
 }
 
-resource "aws_security_group_rule" "default_ssh" {
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.default.id
-  to_port           = 22
-  type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
-  ipv6_cidr_blocks  = ["::/0"]
-}
-
 resource "aws_security_group_rule" "default_http" {
   from_port         = 80
   protocol          = "tcp"
   security_group_id = aws_security_group.default.id
   to_port           = 80
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  ipv6_cidr_blocks  = ["::/0"]
+}
+
+resource "aws_security_group_rule" "default_https" {
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.default.id
+  to_port           = 443
   type              = "ingress"
   cidr_blocks       = ["0.0.0.0/0"]
   ipv6_cidr_blocks  = ["::/0"]
